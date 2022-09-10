@@ -5,7 +5,7 @@ public final class Circle extends Shape {
     private final static String className = "Circle";
 
     public Circle() {
-        shapeName = "Circle";
+        shapeName = className;
     }
 
     public String getClassName() {
