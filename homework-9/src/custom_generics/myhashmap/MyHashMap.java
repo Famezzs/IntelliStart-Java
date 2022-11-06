@@ -1,102 +1,82 @@
 package custom_generics.myhashmap;
 
-import custom_generics.MyNode;
+import custom_generics.mylinkedlist.MyLinkedList;
+
+import java.util.Arrays;
 
 public class MyHashMap<K,V> {
-
-    private MyHashMapNode<K,V> head = null;
-    private MyHashMapNode<K,V> tail = null;
-    private int size = 0;
+    private final int DEFAULT_SIZE = 10;
+    private int currentSize = 0;
+    private MyHashMapNode<K,V>[] nodes;
 
     public MyHashMap() {
-
+        nodes = new MyHashMapNode[DEFAULT_SIZE];
     }
 
-    public MyHashMap(final MyHashMap<K,V> toCopy) {
-        head = toCopy.head;
-        tail = toCopy.tail;
-        size = toCopy.size;
+    public MyHashMap(MyHashMap<K,V> copyFrom) {
+        nodes = copyFrom.nodes;
+        currentSize = copyFrom.currentSize;
     }
 
-    public void put(final K key, final V value) {
-        MyHashMapNode<K,V> existingNode = getNode(key);
+    public void put(K key, V value) {
+        boolean quarterOrLessArraySpaceLeft = currentSize >= 0.75 * nodes.length;
 
-        if (existingNode != null) {
-            existingNode.value = value;
-        } else {
-            putNode(key, value);
+        if (quarterOrLessArraySpaceLeft) {
+            resize();
         }
+
+        int nodeIndex = calculateIndex(key);
+
+        MyHashMapNode<K,V> newNode = new MyHashMapNode<>(key, value);
+
+        MyHashMapNode<K,V> foundNodes = nodes[nodeIndex];
+
+        if (foundNodes != null) {
+            while (foundNodes.next != null) {
+                foundNodes = foundNodes.next;
+            }
+            foundNodes.next = newNode;
+        } else {
+            nodes[nodeIndex] = newNode;
+        }
+
+        ++currentSize;
     }
 
-    public V get(final K key) {
-        MyHashMapNode<K,V> headCopy = head;
+    public MyHashMapNode<K,V> get(K key) {
+        int nodeIndex = calculateIndex(key);
 
-        for (; headCopy != null; headCopy = headCopy.next) {
-            if (headCopy.key.equals(key)) {
-                return headCopy.value;
+        MyHashMapNode<K,V> foundNodes = nodes[nodeIndex];
+
+        while (foundNodes != null) {
+            if (foundNodes.key.equals(key)) {
+                return foundNodes;
             }
+            foundNodes = foundNodes.next;
         }
 
         return null;
     }
 
-
-    public boolean remove(final K key) {
-        MyHashMapNode<K,V> nodeToRemove = getNode(key);
-
-        if (nodeToRemove == null) {
-            return false;
-        }
-
-        if (nodeToRemove.previous != null) {
-            nodeToRemove.previous.next = nodeToRemove.next;
-        } else {
-            head = nodeToRemove.next;
-        }
-
-        if (nodeToRemove.next != null) {
-            nodeToRemove.next.previous = nodeToRemove.previous;
-        } else {
-            tail = nodeToRemove.previous;
-        }
-
-        --size;
-        return true;
+    public int getBucketSize() {
+        return nodes.length;
     }
 
-    public void clear() {
-        head = null;
-        tail = null;
-        size = 0;
+    private int calculateIndex(K key) {
+        return Math.abs(key.hashCode() % nodes.length);
     }
 
-    public int size() {
-        return size;
-    }
+    private void resize() {
+        MyHashMapNode<K,V>[] oldNodes = nodes;
 
-    private MyHashMapNode<K,V> getNode(final K key) {
-        MyHashMapNode<K,V> headCopy = head;
+        nodes = new MyHashMapNode[currentSize * 2];
+        currentSize = 0;
 
-        for (; headCopy != null; headCopy = headCopy.next) {
-            if (headCopy.key.equals(key)) {
-                return headCopy;
+        for (MyHashMapNode<K,V> oldNode: oldNodes) {
+            while (oldNode != null) {
+                put(oldNode.key, oldNode.value);
+                oldNode = oldNode.next;
             }
         }
-
-        return null;
-    }
-
-    private void putNode(final K key, final V value) {
-        MyHashMapNode<K,V> newNode = new MyHashMapNode<>(null, null, key, value);
-
-        if (tail != null) {
-            newNode.previous = tail;
-            tail.next = newNode;
-        } else {
-            head = newNode;
-        }
-
-        tail = newNode;
-        ++size;
     }
 }
