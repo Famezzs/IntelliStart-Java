@@ -2,8 +2,13 @@ package task_1;
 
 import static constants.Constants.INVALID_NAMES_ARRAY_MESSAGE;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 public class OddNamesPrinter {
-    public static String getOddNames(final String... names)
+    public static String getOddNames(final String[] names)
     throws IllegalArgumentException {
 
         if (names == null ||
@@ -14,15 +19,18 @@ public class OddNamesPrinter {
 
         final StringBuilder result = new StringBuilder();
 
-        for (int index = 1; index < names.length;index += 2) {
-            result.append(index)
+        IntStream.range(1, names.length)
+            .filter(index -> index % 2 != 0)
+            .mapToObj(index ->  {
+                StringBuilder name = new StringBuilder();
+                name.append(index)
                     .append(". ")
                     .append(names[index]);
-
-            if (index + 2 < names.length) {
-                result.append(", ");
-            }
-        }
+                if (index + 2 < names.length) {
+                    name.append(", ");
+                };
+                return name.toString();})
+            .forEach(result::append);
 
         return result.toString();
     }

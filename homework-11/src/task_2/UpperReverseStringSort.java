@@ -3,6 +3,7 @@ package task_2;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static constants.Constants.INVALID_STRING_LIST_MESSAGE;
 
@@ -16,14 +17,9 @@ public class UpperReverseStringSort {
             throw new IllegalArgumentException(INVALID_STRING_LIST_MESSAGE);
         }
 
-        final List<String> result = new LinkedList<>();
-
-        for (final String value: strings) {
-            result.add(value.toUpperCase());
-        }
-
-        result.sort(Comparator.reverseOrder());
-
-        return result;
+        return strings.stream()
+            .map(String::toUpperCase)
+            .sorted(Comparator.reverseOrder())
+            .collect(Collectors.toList());
     }
 }
